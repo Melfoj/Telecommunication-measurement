@@ -1,15 +1,12 @@
 import vxi11
 import time
 from pylab import *
-import sys
-from numpy import *
 
-ip=sys.argv[1]
-sa = vxi11.Instrument(str(ip))
+sa = vxi11.Instrument('147.91.9.239')
 
-fmin=0
-fmax=7100000000 #ogranicenje uredjaja
-rlev=-50
+fmin=10000
+fmax=100000
+rlev=0
 pdv=10
 Bv=10
 Br=10
@@ -26,26 +23,24 @@ sa.write(':bandwidth:video '+str(Bv))#Propusni opseg video filra
 time.sleep(0.3)
 sa.write(':bandwidth:resolution '+str(Br))#Propusni opseg rezolucionog filtra
 time.sleep(0.3)
-sa.write(':detector:negative') #tip detektora
-time.sleep(0.3)
 
-n=10000
-f=linspace(fmin,fmax,n)
+n=200
+fq=linspace(fmin,fmax,n)
 A=[]
-for el in f:
+for el in fq:
 	sa.write(':calculate:marker:X '+str(el))
-	time.sleep(0.2)
+	time.sleep(0.3)
 	Y=float(sa.ask(':calculate:marker:Y?'))
 	A.append(Y)
 
 ops=[]
 for el in range(len(A)):
 	if A[el] > (max(A)-3): 
-		ops.append(f[el])
+		ops.append(fq[el])
 		
 print('Propusni ospeg je ['+str(ops[0])+','+str(ops[-1])+']')
 A=array(A)
-plot(f,A)
+plot(fq,A)
 title('Amplitudska karakteristika')
 sa.close()
 show()
